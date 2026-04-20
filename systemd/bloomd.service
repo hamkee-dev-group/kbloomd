@@ -1,0 +1,39 @@
+[Unit]
+Description=bloomd local kernel Bloom filter daemon
+After=local-fs.target
+ConditionPathIsMountPoint=/sys/fs/bpf
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStartPre=/usr/bin/test -d /sys/fs/bpf
+ExecStartPre=/usr/bin/mkdir -p /sys/fs/bpf/bloomd
+ExecStartPre=/usr/bin/mkdir -p /var/lib/bloomd
+ExecStartPre=/usr/bin/rm -f /run/bloomd.sock
+ExecStart=/usr/local/sbin/bloomd --socket /run/bloomd.sock --pin-root /sys/fs/bpf/bloomd --meta-root /var/lib/bloomd --log-sync-mode periodic
+ExecStartPost=/usr/local/bin/bloomctl -s /run/bloomd.sock ping
+ExecStopPost=/usr/bin/rm -f /run/bloomd.sock
+Restart=on-failure
+RestartSec=1s
+StartLimitIntervalSec=30
+StartLimitBurst=5
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/sys/fs/bpf/bloomd /var/lib/bloomd /run
+ProtectKernelTunables=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectClock=true
+LockPersonality=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX
+SystemCallArchitectures=native
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
