@@ -123,13 +123,13 @@ static int bloomctl_command_create(struct bloomd_buffer *body, int argc, char **
     struct bloomd_create_request req = {0};
     int rc;
 
-    if (argc - start < 4) {
+    if (argc - start < 3) {
         fprintf(stderr, "usage: bloomctl create NAME CAPACITY ERROR_RATE [HASHES]\n");
         return -EINVAL;
     }
     req.capacity = strtoull(argv[start + 1], NULL, 10);
     req.error_rate = strtod(argv[start + 2], NULL);
-    req.hashes = (argc - start >= 5) ? (uint32_t)strtoul(argv[start + 3], NULL, 10) : 0;
+    req.hashes = (argc - start >= 4) ? (uint32_t)strtoul(argv[start + 3], NULL, 10) : 0;
     req.name_len = (uint16_t)strlen(argv[start]);
     rc = bloomd_buffer_append(body, &req, sizeof(req));
     if (rc != 0) {

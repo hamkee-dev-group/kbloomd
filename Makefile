@@ -24,7 +24,10 @@ ALL_BINS := \
 
 CPPHECK_DIRS := $(SRC_DIR) include
 
-.PHONY: all clean lint
+TESTS_DIR := tests
+TEST_CREATE_HASHES_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_create_hashes.c
+
+.PHONY: all clean lint test
 
 all: $(ALL_BINS)
 
@@ -42,6 +45,12 @@ $(BUILD_DIR)/bloominspect: $(INSPECT_SRCS) | $(BUILD_DIR)
 
 lint:
 	cppcheck --enable=warning,performance,portability --error-exitcode=1 --quiet --check-level=exhaustive --std=c11 -Iinclude --suppress=missingIncludeSystem $(CPPHECK_DIRS)
+
+$(BUILD_DIR)/test_create_hashes: $(TEST_CREATE_HASHES_SRCS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -o $@ $(TEST_CREATE_HASHES_SRCS) $(LDFLAGS)
+
+test: $(BUILD_DIR)/bloomctl $(BUILD_DIR)/test_create_hashes
+	$(BUILD_DIR)/test_create_hashes
 
 clean:
 	rm -rf $(BUILD_DIR)
