@@ -1243,6 +1243,11 @@ static int bloomd_dispatch(const struct bloomd_config *cfg, struct bloomd_filter
 
     switch (req->header.opcode) {
     case BLOOMD_OP_PING:
+        if (req->header.body_len != 0) {
+            rc = bloomd_response_error(resp, BLOOMD_STATUS_BAD_REQUEST, BLOOMD_ERR_PARSE,
+                                       "PING body must be empty");
+            break;
+        }
         rc = bloomd_handle_ping(resp);
         break;
     case BLOOMD_OP_CREATE:
@@ -1264,12 +1269,22 @@ static int bloomd_dispatch(const struct bloomd_config *cfg, struct bloomd_filter
         rc = bloomd_handle_info(set, req, resp);
         break;
     case BLOOMD_OP_LIST:
+        if (req->header.body_len != 0) {
+            rc = bloomd_response_error(resp, BLOOMD_STATUS_BAD_REQUEST, BLOOMD_ERR_PARSE,
+                                       "LIST body must be empty");
+            break;
+        }
         rc = bloomd_handle_list(set, resp);
         break;
     case BLOOMD_OP_DROP:
         rc = bloomd_handle_drop(set, stats, req, resp);
         break;
     case BLOOMD_OP_STATS:
+        if (req->header.body_len != 0) {
+            rc = bloomd_response_error(resp, BLOOMD_STATUS_BAD_REQUEST, BLOOMD_ERR_PARSE,
+                                       "STATS body must be empty");
+            break;
+        }
         rc = bloomd_handle_stats(set, stats, resp);
         break;
     default:
