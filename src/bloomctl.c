@@ -304,10 +304,16 @@ int main(int argc, char **argv) {
         }
         printf("%u\n", resp.header.body_len > 0 ? resp.body[0] : 0U);
     } else if (opcode == BLOOMD_OP_MADD || opcode == BLOOMD_OP_MCHECK) {
-        uint16_t count = bloomd_load_u16(resp.body);
-        const uint8_t *vals = resp.body + 2;
+        uint16_t count;
+        const uint8_t *vals;
 
-        if (resp.header.body_len < 2 || resp.header.body_len != (uint32_t)(2 + count)) {
+        if (resp.header.body_len < 2) {
+            fprintf(stderr, "batch: malformed response body length %u\n", resp.header.body_len);
+            return 1;
+        }
+        count = bloomd_load_u16(resp.body);
+        vals = resp.body + 2;
+        if (resp.header.body_len != (uint32_t)(2 + count)) {
             fprintf(stderr, "batch: malformed response body length %u\n", resp.header.body_len);
             return 1;
         }
@@ -316,29 +322,49 @@ int main(int argc, char **argv) {
         }
     } else if (opcode == BLOOMD_OP_INFO) {
         const uint8_t *p = resp.body;
-        uint16_t name_len = bloomd_load_u16(p);
-        uint16_t backend_len = bloomd_load_u16(p + 2);
-        uint16_t digest_len = bloomd_load_u16(p + 4);
-        uint64_t capacity = bloomd_load_u64(p + 8);
-        double error_rate = bloomd_load_double(p + 16);
-        uint32_t hashes = bloomd_load_u32(p + 24);
-        uint32_t value_size = bloomd_load_u32(p + 28);
-        uint64_t add_calls = bloomd_load_u64(p + 32);
-        uint64_t check_calls = bloomd_load_u64(p + 40);
-        uint64_t batch_add_calls = bloomd_load_u64(p + 48);
-        uint64_t batch_check_calls = bloomd_load_u64(p + 56);
-        uint32_t pin_len = bloomd_load_u32(p + 64);
-        uint32_t state_flags = bloomd_load_u32(p + 68);
-        const char *name = (const char *)(p + 72);
-        const char *backend = name + name_len;
-        const char *digest = backend + backend_len;
-        const char *pin = digest + digest_len;
+        uint16_t name_len;
+        uint16_t backend_len;
+        uint16_t digest_len;
+        uint64_t capacity;
+        double error_rate;
+        uint32_t hashes;
+        uint32_t value_size;
+        uint64_t add_calls;
+        uint64_t check_calls;
+        uint64_t batch_add_calls;
+        uint64_t batch_check_calls;
+        uint32_t pin_len;
+        uint32_t state_flags;
+        const char *name;
+        const char *backend;
+        const char *digest;
+        const char *pin;
 
-        if (resp.header.body_len < 72U ||
-            (uint64_t)72 + name_len + backend_len + digest_len + pin_len != resp.header.body_len) {
+        if (resp.header.body_len < 72U) {
             fprintf(stderr, "info: malformed response body length %u\n", resp.header.body_len);
             return 1;
         }
+        name_len = bloomd_load_u16(p);
+        backend_len = bloomd_load_u16(p + 2);
+        digest_len = bloomd_load_u16(p + 4);
+        capacity = bloomd_load_u64(p + 8);
+        error_rate = bloomd_load_double(p + 16);
+        hashes = bloomd_load_u32(p + 24);
+        value_size = bloomd_load_u32(p + 28);
+        add_calls = bloomd_load_u64(p + 32);
+        check_calls = bloomd_load_u64(p + 40);
+        batch_add_calls = bloomd_load_u64(p + 48);
+        batch_check_calls = bloomd_load_u64(p + 56);
+        pin_len = bloomd_load_u32(p + 64);
+        state_flags = bloomd_load_u32(p + 68);
+        if ((uint64_t)72 + name_len + backend_len + digest_len + pin_len != resp.header.body_len) {
+            fprintf(stderr, "info: malformed response body length %u\n", resp.header.body_len);
+            return 1;
+        }
+        name = (const char *)(p + 72);
+        backend = name + name_len;
+        digest = backend + backend_len;
+        pin = digest + digest_len;
         printf("name=%.*s\nbackend=%.*s\ndigest=%.*s\ncapacity=%llu\nerror_rate=%.17g\nhashes=%u\n"
                "value_size=%u\npin_path=%.*s\nadd_calls=%llu\ncheck_calls=%llu\n"
                "batch_add_calls=%llu\nbatch_check_calls=%llu\nstate_flags=%u\ndurable=%u\nmetadata_only=%u\n"

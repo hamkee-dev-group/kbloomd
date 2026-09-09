@@ -26,6 +26,7 @@ CPPHECK_DIRS := $(SRC_DIR) include
 
 TESTS_DIR := tests
 TEST_CREATE_HASHES_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_create_hashes.c
+TEST_RESPONSE_LENGTHS_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_response_lengths.c
 
 .PHONY: all clean lint test
 
@@ -49,8 +50,12 @@ lint:
 $(BUILD_DIR)/test_create_hashes: $(TEST_CREATE_HASHES_SRCS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(TEST_CREATE_HASHES_SRCS) $(LDFLAGS)
 
-test: $(BUILD_DIR)/bloomctl $(BUILD_DIR)/test_create_hashes
+$(BUILD_DIR)/test_response_lengths: $(TEST_RESPONSE_LENGTHS_SRCS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -o $@ $(TEST_RESPONSE_LENGTHS_SRCS) $(LDFLAGS)
+
+test: $(BUILD_DIR)/bloomctl $(BUILD_DIR)/test_create_hashes $(BUILD_DIR)/test_response_lengths
 	$(BUILD_DIR)/test_create_hashes
+	$(BUILD_DIR)/test_response_lengths
 
 clean:
 	rm -rf $(BUILD_DIR)
