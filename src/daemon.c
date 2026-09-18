@@ -96,6 +96,11 @@ static int bloomd_install_signal_handlers(void) {
     if (sigaction(SIGTERM, &sa, NULL) != 0) {
         return -errno;
     }
+    /* Let write() on a closed peer fail with EPIPE instead of killing the daemon. */
+    sa.sa_handler = SIG_IGN;
+    if (sigaction(SIGPIPE, &sa, NULL) != 0) {
+        return -errno;
+    }
     return 0;
 }
 
