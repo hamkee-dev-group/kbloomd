@@ -28,6 +28,7 @@ TESTS_DIR := tests
 TEST_CREATE_HASHES_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_create_hashes.c
 TEST_RESPONSE_LENGTHS_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_response_lengths.c
 TEST_SIGPIPE_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_sigpipe_peer_close.c
+TEST_RECOVERY_LOG_STATE_SRCS := $(COMMON_SRCS) $(TESTS_DIR)/test_recovery_log_state.c
 
 .PHONY: all clean lint test
 
@@ -57,10 +58,14 @@ $(BUILD_DIR)/test_response_lengths: $(TEST_RESPONSE_LENGTHS_SRCS) | $(BUILD_DIR)
 $(BUILD_DIR)/test_sigpipe_peer_close: $(TEST_SIGPIPE_SRCS) $(SRC_DIR)/daemon.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $(TEST_SIGPIPE_SRCS) $(LDFLAGS)
 
-test: $(BUILD_DIR)/bloomctl $(BUILD_DIR)/test_create_hashes $(BUILD_DIR)/test_response_lengths $(BUILD_DIR)/test_sigpipe_peer_close
+$(BUILD_DIR)/test_recovery_log_state: $(TEST_RECOVERY_LOG_STATE_SRCS) $(SRC_DIR)/daemon.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -o $@ $(TEST_RECOVERY_LOG_STATE_SRCS) $(LDFLAGS)
+
+test: $(BUILD_DIR)/bloomctl $(BUILD_DIR)/test_create_hashes $(BUILD_DIR)/test_response_lengths $(BUILD_DIR)/test_sigpipe_peer_close $(BUILD_DIR)/test_recovery_log_state
 	$(BUILD_DIR)/test_create_hashes
 	$(BUILD_DIR)/test_response_lengths
 	$(BUILD_DIR)/test_sigpipe_peer_close
+	$(BUILD_DIR)/test_recovery_log_state
 
 clean:
 	rm -rf $(BUILD_DIR)

@@ -151,6 +151,7 @@ struct bloomd_filter {
     uint8_t log_buf[BLOOMD_LOG_BUFFER_CAP];
     size_t log_buf_len;
     bool log_dirty;
+    bool log_history_incomplete;
     uint64_t last_log_sync_ms;
     uint64_t add_calls;
     uint64_t check_calls;

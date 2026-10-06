@@ -380,7 +380,7 @@ static void bloomd_sync_dirty_logs(struct bloomd_filter_set *set, uint64_t now_m
             continue;
         }
         filter->log_dirty = false;
-        if (filter->meta.has_data && !filter->meta.log_clean) {
+        if (filter->meta.has_data && !filter->meta.log_clean && !filter->log_history_incomplete) {
             rc = bloomd_update_filter_meta_state(filter, true, true, NULL, 0);
             if (rc != 0) {
                 bloomd_logf("warn", "failed to mark digest log clean name=%s path=%s: %s",
@@ -508,6 +508,9 @@ static int bloomd_load_metadata_dir(const struct bloomd_config *cfg, struct bloo
         }
         filter.meta = meta;
         filter.map_fd = fd;
+        /* A log_clean=0 inherited from disk means the map already holds digests the
+         * log never recorded, so no later sync can make the log complete again. */
+        filter.log_history_incomplete = meta.has_data && !meta.log_clean;
         if (filter.meta.has_data) {
             rc = bloomd_open_filter_log(&filter, false, errbuf, errcap);
             if (rc != 0) {
