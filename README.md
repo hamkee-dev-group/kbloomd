@@ -2,6 +2,9 @@
 
 `bloomd` is a small Linux daemon for local Bloom filters.
 
+This repository and project are named **kbloomd**. The daemon executable it builds
+is `bloomd` (with the client `bloomctl`); the names below refer to the executable.
+
 It uses the kernel `BPF_MAP_TYPE_BLOOM_FILTER` backend directly, exposes a
 Unix-domain socket for local clients, and keeps filter state on disk so filters
 can survive restarts and be rebuilt if a pinned map disappears.
@@ -144,3 +147,7 @@ The repository includes:
 
 These install the daemon, client tools, and a systemd unit for running
 `bloomd` as a local service.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
